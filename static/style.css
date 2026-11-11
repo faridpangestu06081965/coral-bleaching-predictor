@@ -1,0 +1,1408 @@
+/* =====================================================
+   Coral Bleaching Predictor
+   Tema: Samudra Tropis & Terumbu Karang
+   ===================================================== */
+
+:root {
+    --navy-900: #011627;
+    --navy-800: #012a4a;
+    --navy-700: #01497c;
+    --ocean-500: #0174be;
+    --aqua-400: #52d1dc;
+    --turquoise-500: #2ec4b6;
+    --coral-500: #ff7f50;
+    --coral-600: #ff6333;
+
+    --glass-bg: rgba(3, 26, 47, 0.5);
+    --glass-bg-strong: rgba(4, 34, 60, 0.62);
+    --glass-border: rgba(150, 226, 240, 0.2);
+    --line: rgba(255, 255, 255, 0.12);
+
+    --text: #eaf6ff;
+    --text-dim: rgba(234, 246, 255, 0.68);
+
+    --radius-lg: 26px;
+    --radius-md: 15px;
+    --shadow-card: 0 26px 64px rgba(0, 12, 30, 0.42);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    font-family: "Plus Jakarta Sans", "Segoe UI", Inter, system-ui, -apple-system,
+        "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text);
+    background: linear-gradient(165deg, var(--navy-900) 0%, var(--navy-800) 26%,
+            var(--navy-700) 50%, #0191c8 76%, var(--turquoise-500) 100%);
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 58px 22px 150px;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =====================================================
+   Latar dekoratif
+   ===================================================== */
+
+.bg-layer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Foto terumbu karang dengan scrim gradien agar teks tetap kontras */
+.bg-photo {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(125% 95% at 50% 15%, rgba(1, 14, 28, 0.06) 0%,
+                rgba(1, 16, 32, 0.36) 68%, rgba(0, 8, 18, 0.72) 100%),
+        linear-gradient(180deg, rgba(1, 14, 28, 0.68) 0%, rgba(1, 28, 50, 0.38) 30%,
+                rgba(2, 48, 82, 0.2) 62%, rgba(22, 118, 138, 0.24) 100%),
+        url("img/reef-wide.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--navy-900);
+    transform: scale(1.04);
+    animation: bgZoom 26s ease-in-out infinite alternate;
+}
+
+@keyframes bgZoom {
+    from { transform: scale(1.04) translateY(0); }
+    to { transform: scale(1.1) translateY(-10px); }
+}
+
+.ray {
+    position: absolute;
+    top: -30%;
+    width: 20vw;
+    height: 150vh;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+    filter: blur(30px);
+    transform-origin: top center;
+    animation: sway 13s ease-in-out infinite;
+}
+
+.ray-1 { left: 6%; }
+.ray-2 { left: 40%; width: 15vw; opacity: 0.65; animation-delay: -4.5s; }
+.ray-3 { left: 72%; width: 18vw; opacity: 0.45; animation-delay: -9s; }
+
+@keyframes sway {
+    0%, 100% { transform: rotate(-8deg) translateX(0); }
+    50% { transform: rotate(7deg) translateX(28px); }
+}
+
+.bubbles span {
+    position: absolute;
+    bottom: -90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.85),
+            rgba(82, 209, 220, 0.35) 60%, rgba(82, 209, 220, 0.04));
+    animation: rise linear infinite;
+}
+
+.bubbles span:nth-child(1)  { left: 5%;  width: 12px; height: 12px; animation-duration: 15s; }
+.bubbles span:nth-child(2)  { left: 15%; width: 20px; height: 20px; animation-duration: 22s; animation-delay: 3s; }
+.bubbles span:nth-child(3)  { left: 26%; width: 9px;  height: 9px;  animation-duration: 13s; animation-delay: 7s; }
+.bubbles span:nth-child(4)  { left: 36%; width: 16px; height: 16px; animation-duration: 19s; animation-delay: 1s; }
+.bubbles span:nth-child(5)  { left: 46%; width: 11px; height: 11px; animation-duration: 17s; animation-delay: 9s; }
+.bubbles span:nth-child(6)  { left: 55%; width: 22px; height: 22px; animation-duration: 24s; animation-delay: 5s; }
+.bubbles span:nth-child(7)  { left: 64%; width: 13px; height: 13px; animation-duration: 16s; animation-delay: 11s; }
+.bubbles span:nth-child(8)  { left: 72%; width: 18px; height: 18px; animation-duration: 21s; animation-delay: 2s; }
+.bubbles span:nth-child(9)  { left: 80%; width: 10px; height: 10px; animation-duration: 14s; animation-delay: 8s; }
+.bubbles span:nth-child(10) { left: 87%; width: 15px; height: 15px; animation-duration: 20s; animation-delay: 12s; }
+.bubbles span:nth-child(11) { left: 93%; width: 19px; height: 19px; animation-duration: 23s; animation-delay: 6s; }
+.bubbles span:nth-child(12) { left: 98%; width: 8px;  height: 8px;  animation-duration: 12s; animation-delay: 4s; }
+
+@keyframes rise {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    12%  { opacity: 0.7; }
+    50%  { transform: translateY(-55vh) translateX(24px); }
+    88%  { opacity: 0.55; }
+    100% { transform: translateY(-118vh) translateX(-18px); opacity: 0; }
+}
+
+/* =====================================================
+   Struktur utama
+   ===================================================== */
+
+.wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1060px;
+}
+
+/* ---------- Baris atas & pemilih bahasa ---------- */
+
+.topbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}
+
+.lang-switch {
+    display: inline-flex;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 10px 26px rgba(0, 12, 30, 0.28);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.lang-btn {
+    min-width: 46px;
+    padding: 6px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.lang-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.lang-btn.is-active {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(82, 209, 220, 0.42), rgba(46, 196, 182, 0.42));
+    box-shadow: 0 6px 16px rgba(46, 196, 182, 0.3);
+}
+
+.lang-btn:focus-visible {
+    outline: 2px solid var(--aqua-400);
+    outline-offset: 2px;
+}
+
+/* ---------- Header ---------- */
+
+.hero {
+    text-align: center;
+    margin-bottom: 34px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 17px 7px 11px;
+    margin-bottom: 18px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(234, 246, 255, 0.92);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    background: var(--glass-bg);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    animation: fadeUp 0.6s ease both;
+}
+
+.logo {
+    width: 23px;
+    height: 23px;
+    flex-shrink: 0;
+}
+
+.hero h1 {
+    font-size: clamp(1.75rem, 4.4vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: -0.8px;
+    text-shadow: 0 6px 26px rgba(0, 10, 25, 0.45);
+    animation: fadeUp 0.6s ease 0.06s both;
+}
+
+.subtitle {
+    margin: 13px auto 0;
+    max-width: 580px;
+    font-size: clamp(0.88rem, 2.3vw, 1rem);
+    color: var(--text-dim);
+    animation: fadeUp 0.6s ease 0.12s both;
+}
+
+/* ---------- Tata letak dua kolom ---------- */
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.9fr);
+    gap: 24px;
+    align-items: start;
+}
+
+/* ---------- Kartu Glassmorphism ---------- */
+
+.card {
+    border-radius: var(--radius-lg);
+    padding: 30px;
+    box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+    transition: box-shadow 0.35s ease;
+}
+
+.glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
+}
+
+.form-card { animation: riseIn 0.65s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+.status-card { animation: riseIn 0.65s cubic-bezier(0.22, 0.9, 0.3, 1) 0.12s both; }
+
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(22px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.card-head-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: var(--aqua-400);
+    background: rgba(82, 209, 220, 0.14);
+    border: 1px solid rgba(82, 209, 220, 0.3);
+}
+
+.card-head-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.card-head h2 {
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.card-head p {
+    margin-top: 3px;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+/* =====================================================
+   Formulir
+   ===================================================== */
+
+.group {
+    border: 0;
+    margin: 0 0 22px;
+    padding: 0;
+}
+
+.group legend {
+    display: block;
+    width: 100%;
+    padding: 0 0 11px;
+    margin-bottom: 15px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--aqua-400);
+    border-bottom: 1px solid var(--line);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.label-row label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    color: rgba(234, 246, 255, 0.95);
+}
+
+.unit {
+    padding: 2px 9px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: rgba(234, 246, 255, 0.82);
+    background: rgba(82, 209, 220, 0.15);
+    border: 1px solid rgba(82, 209, 220, 0.32);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.field input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #ffffff;
+    border-radius: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.07);
+    outline: none;
+    transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease,
+        transform 0.22s ease;
+}
+
+.field input::placeholder {
+    color: rgba(234, 246, 255, 0.34);
+    font-weight: 400;
+}
+
+.field input:hover {
+    background: rgba(255, 255, 255, 0.11);
+}
+
+.field input:focus {
+    border-color: var(--aqua-400);
+    background: var(--glass-bg-strong);
+    box-shadow: 0 0 0 4px rgba(82, 209, 220, 0.2);
+    transform: translateY(-1px);
+}
+
+.field input:not(:placeholder-shown) {
+    border-color: rgba(82, 209, 220, 0.42);
+}
+
+.field input:invalid:not(:placeholder-shown) {
+    border-color: rgba(255, 127, 80, 0.7);
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.hint {
+    font-size: 0.69rem;
+    color: rgba(234, 246, 255, 0.46);
+}
+
+/* ---------- Tooltip penjelasan parameter ---------- */
+
+.label-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.68rem;
+    font-style: italic;
+    font-weight: 700;
+    color: rgba(234, 246, 255, 0.72);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 50%;
+    cursor: help;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.info:hover,
+.info:focus-visible {
+    color: #ffffff;
+    background: rgba(82, 209, 220, 0.24);
+    border-color: var(--aqua-400);
+    outline: none;
+}
+
+.info-tip {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 6;
+    width: max-content;
+    max-width: 232px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    letter-spacing: 0;
+    text-transform: none;
+    color: rgba(234, 246, 255, 0.94);
+    background: rgba(1, 30, 54, 0.94);
+    border: 1px solid rgba(82, 209, 220, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 16px 34px rgba(0, 10, 25, 0.55);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+.info:hover .info-tip,
+.info:focus-visible .info-tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* ---------- Progres kelengkapan input ---------- */
+
+.progress {
+    margin-top: 22px;
+}
+
+.progress-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 7px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(234, 246, 255, 0.5);
+}
+
+.progress-head strong {
+    font-size: 0.8rem;
+    letter-spacing: 0;
+    color: rgba(234, 246, 255, 0.9);
+}
+
+.progress-track {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.progress-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--turquoise-500), var(--aqua-400));
+    box-shadow: 0 0 12px rgba(82, 209, 220, 0.55);
+    transition: width 0.35s ease;
+}
+
+/* ---------- Preset chips ---------- */
+
+.presets {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 22px;
+}
+
+.presets-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(234, 246, 255, 0.45);
+    margin-right: 2px;
+}
+
+.chip {
+    padding: 7px 15px;
+    font-family: inherit;
+    font-size: 0.77rem;
+    font-weight: 600;
+    color: rgba(234, 246, 255, 0.88);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.chip:hover {
+    background: rgba(82, 209, 220, 0.16);
+    border-color: rgba(82, 209, 220, 0.45);
+    transform: translateY(-2px);
+}
+
+.chip.is-active {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(82, 209, 220, 0.32), rgba(46, 196, 182, 0.32));
+    border-color: var(--aqua-400);
+    box-shadow: 0 8px 20px rgba(46, 196, 182, 0.28);
+}
+
+/* ---------- Tombol ---------- */
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.btn-coral {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 10px;
+    padding: 15px 22px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--coral-500) 0%, var(--coral-600) 100%);
+    box-shadow: 0 12px 30px rgba(255, 127, 80, 0.4);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.24s ease, box-shadow 0.24s ease, filter 0.24s ease;
+}
+
+.btn-coral::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.65s ease;
+}
+
+.btn-coral:hover:not(:disabled) {
+    transform: translateY(-3px);
+    filter: brightness(1.06);
+    box-shadow: 0 18px 38px rgba(255, 127, 80, 0.54);
+}
+
+.btn-coral:hover:not(:disabled)::after {
+    left: 130%;
+}
+
+.btn-coral:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-coral:focus-visible,
+.btn-ghost:focus-visible,
+.chip:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 3px;
+}
+
+.btn-coral:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+    box-shadow: none;
+}
+
+.btn-coral.is-loading .btn-label::before {
+    content: "";
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+    vertical-align: -2px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn-ghost {
+    padding: 15px 24px;
+    font-family: inherit;
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: rgba(234, 246, 255, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.22s ease, color 0.22s ease, transform 0.22s ease;
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btn-ghost:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* =====================================================
+   Panel status
+   ===================================================== */
+
+.status-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.result {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 24px 22px;
+    border-radius: 18px;
+    animation: popIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* --- Keadaan menunggu --- */
+
+.result.idle {
+    align-items: center;
+    text-align: center;
+    padding: 34px 22px;
+    border: 1px dashed rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.idle-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.idle-note {
+    max-width: 270px;
+    font-size: 0.79rem;
+    color: var(--text-dim);
+}
+
+/* --- Keadaan memuat --- */
+
+.result.loading {
+    padding: 34px 22px;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.sk {
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.07) 25%,
+            rgba(255, 255, 255, 0.17) 37%, rgba(255, 255, 255, 0.07) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.sk-gauge {
+    width: 100%;
+    height: 124px;
+    border-radius: 18px;
+    margin-bottom: 6px;
+}
+
+.sk-line {
+    width: 100%;
+    height: 12px;
+}
+
+.sk-line.short {
+    width: 58%;
+}
+
+@keyframes shimmer {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+}
+
+/* --- Keadaan hasil --- */
+
+.result-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.result-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.result-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.result-pill {
+    padding: 4px 13px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.result-title {
+    font-size: 1.06rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+/* --- Gauge klasifikasi --- */
+
+.gauge-wrap {
+    width: 100%;
+    max-width: 236px;
+    margin: 2px auto 0;
+}
+
+.gauge-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.gauge-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.14);
+    stroke-width: 15;
+    stroke-linecap: round;
+}
+
+.gauge-zone-safe {
+    fill: none;
+    stroke: rgba(46, 196, 182, 0.7);
+    stroke-width: 15;
+    stroke-linecap: round;
+}
+
+.gauge-zone-danger {
+    fill: none;
+    stroke: rgba(255, 127, 80, 0.7);
+    stroke-width: 15;
+    stroke-linecap: round;
+}
+
+.gauge-needle {
+    transform-origin: 100px 100px;
+    transform: rotate(0deg);
+    transition: transform 1.05s cubic-bezier(0.22, 0.9, 0.3, 1.12);
+}
+
+.gauge-needle line {
+    stroke: #ffffff;
+    stroke-width: 4.5;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
+}
+
+.gauge-hub {
+    fill: #ffffff;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+.gauge-scale {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 12px;
+    margin-top: 4px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(234, 246, 255, 0.5);
+}
+
+/* --- Ringkasan nilai input --- */
+
+.values-caption {
+    margin-top: 4px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(234, 246, 255, 0.45);
+}
+
+.result-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 12px;
+    width: 100%;
+}
+
+.result-values > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.result-values dt {
+    color: rgba(234, 246, 255, 0.66);
+}
+
+.result-values dd {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.result-note {
+    font-size: 0.81rem;
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+.result.safe {
+    color: #e4fffb;
+    background: linear-gradient(135deg, rgba(46, 196, 182, 0.32), rgba(1, 116, 190, 0.32));
+    border: 1px solid rgba(65, 214, 195, 0.58);
+    box-shadow: 0 14px 34px rgba(46, 196, 182, 0.24);
+}
+
+.result.safe .result-icon {
+    color: #7ff3e4;
+    background: rgba(46, 196, 182, 0.28);
+    box-shadow: 0 0 26px rgba(65, 214, 195, 0.4);
+}
+
+.result.safe .gauge-needle {
+    transform: rotate(-62deg);
+}
+
+.result.danger {
+    color: #fff2ec;
+    background: linear-gradient(135deg, rgba(255, 127, 80, 0.4), rgba(190, 45, 45, 0.4));
+    border: 1px solid rgba(255, 127, 80, 0.75);
+    box-shadow: 0 14px 34px rgba(255, 99, 51, 0.32);
+}
+
+.result.danger .result-icon {
+    color: #ffb59a;
+    background: rgba(255, 127, 80, 0.28);
+    animation: pulse 2.4s ease-out infinite;
+}
+
+.result.danger .gauge-needle {
+    transform: rotate(62deg);
+}
+
+.result.error {
+    color: #ffe9e2;
+    background: rgba(120, 30, 30, 0.42);
+    border: 1px solid rgba(255, 138, 101, 0.66);
+}
+
+.result.error .result-icon {
+    color: #ffb59a;
+}
+
+.result.error .gauge-wrap {
+    opacity: 0.35;
+}
+
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 127, 80, 0.5); }
+    70%  { box-shadow: 0 0 0 16px rgba(255, 127, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 127, 80, 0); }
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Info model ---------- */
+
+.meta {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+}
+
+.meta > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    font-size: 0.78rem;
+}
+
+.meta dt {
+    flex-shrink: 0;
+    color: rgba(234, 246, 255, 0.5);
+}
+
+.meta dd {
+    font-weight: 600;
+    text-align: right;
+    color: rgba(234, 246, 255, 0.9);
+}
+
+/* ---------- Disclaimer ---------- */
+
+.disclaimer {
+    margin-top: 28px;
+    padding: 0 14px;
+    text-align: center;
+    font-size: 0.77rem;
+    line-height: 1.7;
+    color: rgba(234, 246, 255, 0.55);
+}
+
+/* =====================================================
+   Panel insight (radar + kepentingan fitur)
+   ===================================================== */
+
+.insight-card {
+    margin-top: 24px;
+    animation: riseIn 0.65s cubic-bezier(0.22, 0.9, 0.3, 1) 0.2s both;
+}
+
+.insight-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 30px;
+    align-items: start;
+}
+
+/* ---------- Radar profil parameter ---------- */
+
+.radar-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.radar-wrap {
+    width: 100%;
+    max-width: 320px;
+}
+
+.radar-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.radar-grid {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 1;
+}
+
+.radar-ring {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 1;
+}
+
+.radar-spoke {
+    stroke: rgba(255, 255, 255, 0.11);
+    stroke-width: 1;
+}
+
+.radar-label {
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    fill: rgba(234, 246, 255, 0.72);
+}
+
+.radar-median {
+    fill: rgba(82, 209, 220, 0.14);
+    stroke: rgba(82, 209, 220, 0.85);
+    stroke-width: 1.6;
+    stroke-dasharray: 5 4;
+}
+
+.radar-data {
+    fill: rgba(255, 127, 80, 0.24);
+    stroke: var(--coral-500);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.radar-wrap.has-data .radar-data {
+    opacity: 1;
+}
+
+.radar-data.safe {
+    fill: rgba(46, 196, 182, 0.24);
+    stroke: var(--turquoise-500);
+}
+
+.radar-data.danger {
+    fill: rgba(255, 127, 80, 0.26);
+    stroke: var(--coral-500);
+    filter: drop-shadow(0 0 10px rgba(255, 127, 80, 0.4));
+}
+
+.radar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 20px;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.legend-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-dot.ref {
+    background: rgba(82, 209, 220, 0.25);
+    border: 1.6px dashed var(--aqua-400);
+}
+
+.legend-dot.safe {
+    background: var(--turquoise-500);
+    box-shadow: 0 0 10px rgba(46, 196, 182, 0.6);
+}
+
+.legend-dot.danger {
+    background: var(--coral-500);
+    box-shadow: 0 0 10px rgba(255, 127, 80, 0.6);
+}
+
+.legend-dot.error {
+    background: rgba(255, 181, 154, 0.7);
+}
+
+/* ---------- Tingkat kepentingan fitur ---------- */
+
+.importance-panel h3 {
+    margin-bottom: 18px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--aqua-400);
+}
+
+.bars {
+    display: grid;
+    gap: 14px;
+    list-style: none;
+}
+
+.bars li {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) 46px;
+    align-items: center;
+    gap: 12px;
+}
+
+.bar-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(234, 246, 255, 0.85);
+}
+
+.bar-track {
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    overflow: hidden;
+}
+
+.bar-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--turquoise-500), var(--aqua-400));
+    box-shadow: 0 0 12px rgba(82, 209, 220, 0.45);
+    transition: width 0.9s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.bars li:first-child .bar-fill {
+    background: linear-gradient(90deg, var(--coral-500), #ffb08a);
+    box-shadow: 0 0 12px rgba(255, 127, 80, 0.5);
+}
+
+.bar-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: right;
+    color: rgba(234, 246, 255, 0.92);
+}
+
+.panel-note {
+    margin-top: 16px;
+    font-size: 0.71rem;
+    line-height: 1.6;
+    color: rgba(234, 246, 255, 0.48);
+}
+
+.panel-note code {
+    padding: 1px 6px;
+    font-size: 0.68rem;
+    font-family: "SFMono-Regular", "Consolas", monospace;
+    color: rgba(234, 246, 255, 0.82);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+}
+
+.panel-note strong {
+    font-weight: 700;
+    color: rgba(234, 246, 255, 0.86);
+}
+
+/* =====================================================
+   Kartu keterangan model & sumber data
+   ===================================================== */
+
+.doc-card {
+    margin-top: 24px;
+    animation: riseIn 0.65s cubic-bezier(0.22, 0.9, 0.3, 1) 0.26s both;
+}
+
+.doc-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 30px;
+    align-items: start;
+}
+
+.doc-panel h3 {
+    margin-bottom: 16px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--aqua-400);
+}
+
+.spec-list {
+    display: grid;
+    gap: 1px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.spec-list > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 14px;
+    background: rgba(1, 30, 54, 0.28);
+}
+
+.spec-list dt {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    color: rgba(234, 246, 255, 0.6);
+}
+
+.spec-list dd {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: right;
+    color: rgba(234, 246, 255, 0.94);
+}
+
+/* =====================================================
+   Animasi umum
+   ===================================================== */
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =====================================================
+   Responsif
+   ===================================================== */
+
+@media (min-width: 981px) {
+    .status-card {
+        position: sticky;
+        top: 26px;
+    }
+}
+
+@media (max-width: 980px) {
+    .layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .wrapper {
+        max-width: 640px;
+    }
+
+    .insight-body {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .doc-body {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: 34px 15px 130px;
+    }
+
+    .card {
+        padding: 22px 18px;
+        border-radius: 20px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btn-ghost {
+        width: 100%;
+    }
+
+    .result.idle {
+        padding: 32px 18px;
+    }
+
+    .result-values {
+        grid-template-columns: 1fr;
+    }
+
+    .info-tip {
+        max-width: 200px;
+    }
+
+    /* Varian foto berorientasi tegak untuk layar ponsel */
+    .bg-photo {
+        background-image:
+            radial-gradient(125% 95% at 50% 15%, rgba(1, 14, 28, 0.06) 0%,
+                    rgba(1, 16, 32, 0.36) 68%, rgba(0, 8, 18, 0.72) 100%),
+            linear-gradient(180deg, rgba(1, 14, 28, 0.68) 0%, rgba(1, 28, 50, 0.38) 30%,
+                    rgba(2, 48, 82, 0.2) 62%, rgba(22, 118, 138, 0.24) 100%),
+            url("img/reef-tall.jpg");
+    }
+}
+
+/* =====================================================
+   Aksesibilitas
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}

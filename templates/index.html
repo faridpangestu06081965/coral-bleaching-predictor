@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="pageTitle">Coral Bleaching Predictor | Prediksi Pemutihan Terumbu Karang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Dekorasi latar: foto terumbu, berkas cahaya & gelembung -->
+    <div class="bg-layer" aria-hidden="true">
+        <div class="bg-photo"></div>
+        <span class="ray ray-1"></span>
+        <span class="ray ray-2"></span>
+        <span class="ray ray-3"></span>
+        <div class="bubbles">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <main class="wrapper">
+        <div class="topbar">
+            <div class="lang-switch" role="group" aria-label="Pilih bahasa" data-i18n-aria="langAria">
+                <button type="button" class="lang-btn is-active" data-lang="id" aria-pressed="true">ID</button>
+                <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+            </div>
+        </div>
+
+        <header class="hero">
+            <span class="badge">
+                <svg class="logo" viewBox="0 0 48 48" fill="none" stroke-linecap="round" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="cg" x1="0" y1="48" x2="48" y2="0">
+                            <stop offset="0%" stop-color="#2EC4B6"/>
+                            <stop offset="100%" stop-color="#52D1DC"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M24 42V21" stroke="url(#cg)" stroke-width="3.5"/>
+                    <path d="M24 31c-5 0-9-3.5-9-9v-4" stroke="url(#cg)" stroke-width="3.5"/>
+                    <path d="M24 26c5 0 9-4 9-10V9" stroke="url(#cg)" stroke-width="3.5"/>
+                    <circle cx="15" cy="16" r="2.4" fill="#2EC4B6"/>
+                    <circle cx="33" cy="9" r="2.4" fill="#52D1DC"/>
+                    <circle cx="24" cy="19" r="2.4" fill="#FF7F50"/>
+                </svg>
+                <span data-i18n="badge">Model XGBoost &middot; Machine Learning</span>
+            </span>
+            <h1 data-i18n="heroTitle">Prediksi Pemutihan Terumbu Karang</h1>
+            <p class="subtitle" data-i18n="heroSubtitle">
+                Analisis risiko pemutihan karang berdasarkan enam parameter lingkungan laut
+            </p>
+        </header>
+
+        <div class="layout">
+            <!-- ============ Kartu Formulir ============ -->
+            <section class="card glass form-card">
+                <div class="card-head">
+                    <span class="card-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18M3 12h18M3 18h18"/>
+                            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+                            <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/>
+                            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 data-i18n="formTitle">Parameter Lingkungan</h2>
+                        <p data-i18n-html="formDescHtml">Arahkan kursor ke ikon <em>i</em> untuk melihat penjelasan tiap parameter.</p>
+                    </div>
+                </div>
+
+                <form id="predict-form" autocomplete="off" novalidate>
+                    <fieldset class="group">
+                        <legend data-i18n="legendTemp">Suhu &amp; Anomali</legend>
+                        <div class="grid">
+                            <div class="field">
+                                <div class="label-row">
+                                    <label for="Temperature_Mean">Temperature Mean</label>
+                                    <span class="label-tools">
+                                        <span class="unit">K</span>
+                                        <button type="button" class="info" aria-label="Penjelasan Temperature Mean" data-i18n-aria="ariaTemp">i<span
+                                                class="info-tip" data-i18n="tipTemp">Suhu rata-rata permukaan laut (Kelvin) pada periode observasi.</span></button>
+                                    </span>
+                                </div>
+                                <input type="number" step="any" id="Temperature_Mean"
+                                       name="Temperature_Mean" placeholder="300.8" required>
+                                <span class="hint" data-i18n="hintTemp">Rentang data 291 &ndash; 304 K</span>
+                            </div>
+
+                            <div class="field">
+                                <div class="label-row">
+                                    <label for="SSTA">SSTA</label>
+                                    <span class="label-tools">
+                                        <span class="unit">&deg;C</span>
+                                        <button type="button" class="info" aria-label="Penjelasan SSTA" data-i18n-aria="ariaSsta">i<span
+                                                class="info-tip" data-i18n="tipSsta">Sea Surface Temperature Anomaly: selisih suhu permukaan laut terhadap rata-rata jangka panjangnya.</span></button>
+                                    </span>
+                                </div>
+                                <input type="number" step="any" id="SSTA" name="SSTA"
+                                       placeholder="0.22" required>
+                                <span class="hint" data-i18n="hintSsta">Anomali suhu &minus;4.6 &ndash; 5.9</span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="group">
+                        <legend data-i18n="legendDhw">Akumulasi Stres Termal</legend>
+                        <div class="grid">
+                            <div class="field">
+                                <div class="label-row">
+                                    <label for="SSTA_DHW">SSTA DHW</label>
+                                    <span class="label-tools">
+                                        <span class="unit">&deg;C-minggu</span>
+                                        <button type="button" class="info" aria-label="Penjelasan SSTA DHW" data-i18n-aria="ariaSstaDhw">i<span
+                                                class="info-tip" data-i18n="tipSstaDhw">Degree Heating Weeks berbasis SSTA: akumulasi panas berlebih di atas ambang pemutihan pada periode pengamatan.</span></button>
+                                    </span>
+                                </div>
+                                <input type="number" step="any" id="SSTA_DHW" name="SSTA_DHW"
+                                       placeholder="1.24" required>
+                                <span class="hint" data-i18n="hintSstaDhw">Rentang data 0 &ndash; 53.6</span>
+                            </div>
+
+                            <div class="field">
+                                <div class="label-row">
+                                    <label for="TSA_DHW">TSA DHW</label>
+                                    <span class="label-tools">
+                                        <span class="unit">&deg;C-minggu</span>
+                                        <button type="button" class="info" aria-label="Penjelasan TSA DHW" data-i18n-aria="ariaTsaDhw">i<span
+                                                class="info-tip" data-i18n="tipTsaDhw">Degree Heating Weeks berbasis Thermal Stress Anomaly: akumulasi stres panas alternatif dari dataset observasi.</span></button>
+                                    </span>
+                                </div>
+                                <input type="number" step="any" id="TSA_DHW" name="TSA_DHW"
+                                       placeholder="0.0" required>
+                                <span class="hint" data-i18n="hintTsaDhw">Rentang data 0 &ndash; 52.5</span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="group">
+                        <legend data-i18n="legendLoc">Kondisi Lokasi</legend>
+                        <div class="grid">
+                            <div class="field">
+                                <div class="label-row">
+                                    <label for="Windspeed">Windspeed</label>
+                                    <span class="label-tools">
+                                        <span class="unit">m/s</span>
+                                        <button type="button" class="info" aria-label="Penjelasan Windspeed" data-i18n-aria="ariaWind">i<span
+                                                class="info-tip" data-i18n="tipWind">Kecepatan angin rata-rata di permukaan; memengaruhi pencampuran air dan pelepasan panas.</span></button>
+                                    </span>
+                                </div>
+                                <input type="number" step="any" id="Windspeed" name="Windspeed"
+                                       placeholder="5.0" required>
+                                <span class="hint" data-i18n="hintWind">Rentang data 0 &ndash; 15 m/s</span>
+                            </div>
+
+                            <div class="field">
+                                <div class="label-row">
+                                    <label for="Depth_m">Depth</label>
+                                    <span class="label-tools">
+                                        <span class="unit">m</span>
+                                        <button type="button" class="info" aria-label="Penjelasan Depth" data-i18n-aria="ariaDepth">i<span
+                                                class="info-tip" data-i18n="tipDepth">Kedalaman lokasi terumbu dalam meter; memengaruhi paparan panas dan cahaya.</span></button>
+                                    </span>
+                                </div>
+                                <input type="number" step="any" id="Depth_m" name="Depth_m"
+                                       placeholder="6.0" required>
+                                <span class="hint" data-i18n="hintDepth">Rentang data 0 &ndash; 90 m</span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="progress">
+                        <div class="progress-head">
+                            <span data-i18n="progressLabel">Kelengkapan parameter</span>
+                            <strong><span id="filled-count">0</span> / 6</strong>
+                        </div>
+                        <div class="progress-track">
+                            <span class="progress-fill" id="progress-fill"></span>
+                        </div>
+                    </div>
+
+                    <div class="presets">
+                        <span class="presets-label" data-i18n="presetsLabel">Isi cepat</span>
+                        <button type="button" class="chip" data-preset="sehat" data-i18n="presetSehat">Karang Sehat</button>
+                        <button type="button" class="chip" data-preset="panas" data-i18n="presetPanas">Stres Panas</button>
+                        <button type="button" class="chip" data-preset="dalam" data-i18n="presetDalam">Perairan Dalam</button>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn-coral" id="submit-btn">
+                            <span class="btn-label" data-i18n="btnSubmit">Analisis Sekarang</span>
+                        </button>
+                        <button type="button" class="btn-ghost" id="reset-btn">Reset</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ============ Kartu Status ============ -->
+            <aside class="card glass status-card">
+                <div class="card-head">
+                    <span class="card-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>
+                            <circle cx="12" cy="12" r="4.2"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 data-i18n="statusTitle">Status Analisis</h2>
+                        <p data-i18n="statusDesc">Hasil klasifikasi model</p>
+                    </div>
+                </div>
+
+                <div id="result" class="result idle" role="status" aria-live="polite"></div>
+
+                <dl class="meta">
+                    <div>
+                        <dt>Model</dt>
+                        <dd>XGBoost Classifier</dd>
+                    </div>
+                    <div>
+                        <dt data-i18n="metaFeatLabel">Fitur</dt>
+                        <dd data-i18n="metaFeatValue">6 parameter lingkungan</dd>
+                    </div>
+                    <div>
+                        <dt>Output</dt>
+                        <dd data-i18n="metaOutValue">0 = Karang Sehat &middot; 1 = Potensi Memutih</dd>
+                    </div>
+                </dl>
+            </aside>
+        </div>
+
+        <!-- ============ Kartu Insight Model ============ -->
+        <section class="card glass insight-card">
+            <div class="card-head">
+                <span class="card-head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"/>
+                        <path d="M7 15l4-5 3 3 4-6"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2 data-i18n="insightTitle">Insight Model &amp; Profil Parameter</h2>
+                    <p data-i18n="insightDesc">Perbandingan input terhadap dataset latih serta bobot tiap fitur pada model.</p>
+                </div>
+            </div>
+
+            <div class="insight-body">
+                <div class="radar-panel">
+                    <div id="radar" class="radar-wrap"></div>
+                    <div id="radar-legend" class="radar-legend"></div>
+                    <p class="panel-note" data-i18n="radarNote">
+                        Skala ternormalisasi 0&ndash;1 dari rentang data latih. Nilai di luar rentang diklip ke tepi.
+                    </p>
+                </div>
+
+                <div class="importance-panel">
+                    <h3 data-i18n="impTitle">Tingkat Kepentingan Fitur</h3>
+                    <ul class="bars" id="importance-list"></ul>
+                    <p class="panel-note" data-i18n-html="impNoteHtml">
+                        Diambil dari <code>model.feature_importances_</code> (gain XGBoost, ternormalisasi).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Kartu Keterangan Model & Sumber Data ============ -->
+        <section class="card glass doc-card">
+            <div class="card-head">
+                <span class="card-head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="8" ry="3"/>
+                        <path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/>
+                        <path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2 data-i18n="docTitle">Keterangan Model &amp; Sumber Data</h2>
+                    <p data-i18n="docDesc">Detail model prediksi serta asal-usul dataset yang digunakan.</p>
+                </div>
+            </div>
+
+            <div class="doc-body">
+                <div class="doc-panel">
+                    <h3 data-i18n="modelH">Spesifikasi Model</h3>
+                    <dl class="spec-list">
+                        <div><dt data-i18n="rAlgo">Algoritma</dt><dd>XGBoost Classifier</dd></div>
+                        <div><dt data-i18n="rConfig">Konfigurasi</dt><dd>200 estimator &middot; max_depth 6</dd></div>
+                        <div><dt>Learning rate</dt><dd data-i18n="vLr">0.05 &middot; metrik logloss</dd></div>
+                        <div><dt data-i18n="rBalance">Penyeimbangan kelas</dt><dd data-i18n="vBalance">scale_pos_weight (rasio kelas)</dd></div>
+                        <div><dt data-i18n="rSplit">Pembagian data</dt><dd data-i18n="vSplit">Latih &lt; 2015 &middot; Uji &ge; 2015</dd></div>
+                        <div><dt data-i18n="rSize">Jumlah data</dt><dd data-i18n="vSize">25 355 latih &middot; 7 361 uji</dd></div>
+                        <div><dt data-i18n="rAcc">Akurasi uji</dt><dd>64.2%</dd></div>
+                        <div><dt data-i18n="rF1">F1 kelas pemutihan</dt><dd>52.3%</dd></div>
+                    </dl>
+                </div>
+
+                <div class="doc-panel">
+                    <h3 data-i18n="datasetH">Sumber Dataset</h3>
+                    <dl class="spec-list">
+                        <div><dt data-i18n="rFile">Berkas</dt><dd>global_bleaching_environmental.csv</dd></div>
+                        <div><dt data-i18n="rSource">Sumber</dt><dd>BCO-DMO</dd></div>
+                        <div><dt data-i18n="rMerge">Penggabungan data</dt><dd data-i18n="vMerge">Satelit suhu laut NOAA</dd></div>
+                        <div><dt data-i18n="rPeriod">Periode</dt><dd>1980 &ndash; 2020</dd></div>
+                        <div><dt data-i18n="rTotal">Total rekaman</dt><dd data-i18n="vTotal">41 361 baris</dd></div>
+                        <div><dt data-i18n="rUsed">Rekaman terpakai</dt><dd data-i18n="vUsed">32 716 baris (setelah pembersihan)</dd></div>
+                        <div><dt data-i18n="rCover">Cakupan</dt><dd data-i18n="vCover">91 negara &middot; 5 samudra</dd></div>
+                        <div><dt data-i18n="rContrib">Kontributor lapangan</dt><dd data-i18n="vContrib">Reef Check, Donner, AGRRA, FRRP, Kumagai, dll.</dd></div>
+                        <div><dt data-i18n="rTarget">Definisi target</dt><dd data-i18n="vTarget">Percent_Bleaching &gt; 0 &rarr; pemutihan</dd></div>
+                    </dl>
+                </div>
+            </div>
+
+            <p class="panel-note" data-i18n-html="docNoteHtml">
+                Dataset berasal dari <strong>BCO-DMO</strong> (Biological and Chemical Oceanography Data
+                Management Office), versi yang telah digabungkan (<em>merged</em>) dengan data satelit suhu
+                permukaan laut <strong>NOAA</strong>. Kolom <code>Data_Source</code> mencatat program
+                pemantauan lapangan penyumbang data (Reef Check, Donner, AGRRA, FRRP, dll.). Akurasi model
+                terbatas &mdash; hasil hanya estimasi pendukung keputusan.
+            </p>
+        </section>
+
+        <footer class="disclaimer">
+            <p data-i18n="footerText">Hasil prediksi bersifat estimasi berbasis model machine learning dan bukan pengganti pengamatan lapangan.</p>
+        </footer>
+    </main>
+
+    <script>
+        const form = document.getElementById('predict-form');
+        const resultBox = document.getElementById('result');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnLabel = submitBtn.querySelector('.btn-label');
+        const resetBtn = document.getElementById('reset-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const filledCount = document.getElementById('filled-count');
+        const radarBox = document.getElementById('radar');
+        const radarLegend = document.getElementById('radar-legend');
+        const importanceList = document.getElementById('importance-list');
+
+        const fields = ['Temperature_Mean', 'SSTA', 'SSTA_DHW', 'TSA_DHW', 'Windspeed', 'Depth_m'];
+
+        const LABELS = {
+            Temperature_Mean: 'Temp. Mean',
+            SSTA: 'SSTA',
+            SSTA_DHW: 'SSTA DHW',
+            TSA_DHW: 'TSA DHW',
+            Windspeed: 'Windspeed',
+            Depth_m: 'Depth'
+        };
+
+        const UNITS = {
+            Temperature_Mean: 'K',
+            SSTA: '\u00B0C',
+            SSTA_DHW: '\u00B0C-minggu',
+            TSA_DHW: '\u00B0C-minggu',
+            Windspeed: 'm/s',
+            Depth_m: 'm'
+        };
+
+        const SHORT = {
+            Temperature_Mean: 'Temp',
+            SSTA: 'SSTA',
+            SSTA_DHW: 'DHW-S',
+            TSA_DHW: 'DHW-T',
+            Windspeed: 'Wind',
+            Depth_m: 'Depth'
+        };
+
+        /* Statistik nyata dari global_bleaching_environmental.csv (min/maks 6 fitur) */
+        const RANGE = {
+            Temperature_Mean: [290.88, 303.52],
+            SSTA: [-4.62, 5.9],
+            SSTA_DHW: [0, 53.6],
+            TSA_DHW: [0, 52.45],
+            Windspeed: [0, 15],
+            Depth_m: [0, 90]
+        };
+
+        /* Median tiap fitur pada seluruh dataset latih (referensi radar) */
+        const MEDIAN_ALL = {
+            Temperature_Mean: 300.79,
+            SSTA: 0.22,
+            SSTA_DHW: 1.24,
+            TSA_DHW: 0.0,
+            Windspeed: 5.0,
+            Depth_m: 6.0
+        };
+
+        /* Nilai nyata model.feature_importances_ (XGBoost, total = 1.0) */
+        const IMPORTANCE = [
+            ['Depth', 0.2579],
+            ['Temp. Mean', 0.2404],
+            ['TSA DHW', 0.1986],
+            ['Windspeed', 0.1204],
+            ['SSTA DHW', 0.1011],
+            ['SSTA', 0.0816]
+        ];
+
+        /* Nilai contoh diambil dari nilai representatif dataset latih (bukan angka karangan). */
+        const PRESETS = {
+            sehat: { Temperature_Mean: 301.11, SSTA: 0.16, SSTA_DHW: 1.11, TSA_DHW: 0.0, Windspeed: 5.0, Depth_m: 5.0 },
+            panas: { Temperature_Mean: 302.0, SSTA: 2.0, SSTA_DHW: 8.0, TSA_DHW: 7.0, Windspeed: 2.0, Depth_m: 5.0 },
+            dalam: { Temperature_Mean: 300.0, SSTA: -0.5, SSTA_DHW: 0.0, TSA_DHW: 0.0, Windspeed: 7.0, Depth_m: 30.0 }
+        };
+
+        const ICONS = {
+            danger: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+            safe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+            error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>'
+        };
+
+        /* ---------- Internasionalisasi (ID / EN) ---------- */
+
+        const I18N = {
+            id: {
+                pageTitle: 'Coral Bleaching Predictor | Prediksi Pemutihan Terumbu Karang',
+                langAria: 'Pilih bahasa',
+                badge: 'Model XGBoost \u00B7 Machine Learning',
+                heroTitle: 'Prediksi Pemutihan Terumbu Karang',
+                heroSubtitle: 'Analisis risiko pemutihan karang berdasarkan enam parameter lingkungan laut',
+                formTitle: 'Parameter Lingkungan',
+                formDescHtml: 'Arahkan kursor ke ikon <em>i</em> untuk melihat penjelasan tiap parameter.',
+                legendTemp: 'Suhu & Anomali',
+                legendDhw: 'Akumulasi Stres Termal',
+                legendLoc: 'Kondisi Lokasi',
+                ariaTemp: 'Penjelasan Temperature Mean',
+                ariaSsta: 'Penjelasan SSTA',
+                ariaSstaDhw: 'Penjelasan SSTA DHW',
+                ariaTsaDhw: 'Penjelasan TSA DHW',
+                ariaWind: 'Penjelasan Windspeed',
+                ariaDepth: 'Penjelasan Depth',
+                tipTemp: 'Suhu rata-rata permukaan laut (Kelvin) pada periode observasi.',
+                tipSsta: 'Sea Surface Temperature Anomaly: selisih suhu permukaan laut terhadap rata-rata jangka panjangnya.',
+                tipSstaDhw: 'Degree Heating Weeks berbasis SSTA: akumulasi panas berlebih di atas ambang pemutihan pada periode pengamatan.',
+                tipTsaDhw: 'Degree Heating Weeks berbasis Thermal Stress Anomaly: akumulasi stres panas alternatif dari dataset observasi.',
+                tipWind: 'Kecepatan angin rata-rata di permukaan; memengaruhi pencampuran air dan pelepasan panas.',
+                tipDepth: 'Kedalaman lokasi terumbu dalam meter; memengaruhi paparan panas dan cahaya.',
+                hintTemp: 'Rentang data 291 \u2013 304 K',
+                hintSsta: 'Anomali suhu \u22124.6 \u2013 5.9',
+                hintSstaDhw: 'Rentang data 0 \u2013 53.6',
+                hintTsaDhw: 'Rentang data 0 \u2013 52.5',
+                hintWind: 'Rentang data 0 \u2013 15 m/s',
+                hintDepth: 'Rentang data 0 \u2013 90 m',
+                progressLabel: 'Kelengkapan parameter',
+                presetsLabel: 'Isi cepat',
+                presetSehat: 'Karang Sehat',
+                presetPanas: 'Stres Panas',
+                presetDalam: 'Perairan Dalam',
+                btnSubmit: 'Analisis Sekarang',
+                btnLoading: 'Menganalisis...',
+                statusTitle: 'Status Analisis',
+                statusDesc: 'Hasil klasifikasi model',
+                metaFeatLabel: 'Fitur',
+                metaFeatValue: '6 parameter lingkungan',
+                metaOutValue: '0 = Karang Sehat \u00B7 1 = Potensi Memutih',
+                insightTitle: 'Insight Model & Profil Parameter',
+                insightDesc: 'Perbandingan input terhadap dataset latih serta bobot tiap fitur pada model.',
+                impTitle: 'Tingkat Kepentingan Fitur',
+                radarNote: 'Skala ternormalisasi 0\u20131 dari rentang data latih. Nilai di luar rentang diklip ke tepi.',
+                impNoteHtml: 'Diambil dari <code>model.feature_importances_</code> (gain XGBoost, ternormalisasi).',
+                docTitle: 'Keterangan Model & Sumber Data',
+                docDesc: 'Detail model prediksi serta asal-usul dataset yang digunakan.',
+                modelH: 'Spesifikasi Model',
+                datasetH: 'Sumber Dataset',
+                rAlgo: 'Algoritma',
+                rConfig: 'Konfigurasi',
+                vLr: '0.05 \u00B7 metrik logloss',
+                rBalance: 'Penyeimbangan kelas',
+                vBalance: 'scale_pos_weight (rasio kelas)',
+                rSplit: 'Pembagian data',
+                vSplit: 'Latih &lt; 2015 \u00B7 Uji \u2265 2015',
+                rSize: 'Jumlah data',
+                vSize: '25 355 latih \u00B7 7 361 uji',
+                rAcc: 'Akurasi uji',
+                rF1: 'F1 kelas pemutihan',
+                rFile: 'Berkas',
+                rSource: 'Sumber',
+                rMerge: 'Penggabungan data',
+                vMerge: 'Satelit suhu laut NOAA',
+                rPeriod: 'Periode',
+                rTotal: 'Total rekaman',
+                vTotal: '41 361 baris',
+                rUsed: 'Rekaman terpakai',
+                vUsed: '32 716 baris (setelah pembersihan)',
+                rCover: 'Cakupan',
+                vCover: '91 negara \u00B7 5 samudra',
+                rContrib: 'Kontributor lapangan',
+                vContrib: 'Reef Check, Donner, AGRRA, FRRP, Kumagai, dll.',
+                rTarget: 'Definisi target',
+                vTarget: 'Percent_Bleaching &gt; 0 \u2192 pemutihan',
+                docNoteHtml: 'Dataset berasal dari <strong>BCO-DMO</strong> (Biological and Chemical Oceanography Data Management Office), versi yang telah digabungkan dengan data satelit suhu permukaan laut <strong>NOAA</strong>. Kolom <code>Data_Source</code> mencatat program pemantauan lapangan penyumbang data (Reef Check, Donner, AGRRA, FRRP, dll.). Akurasi model terbatas &mdash; hasil hanya estimasi pendukung keputusan.',
+                footerText: 'Hasil prediksi bersifat estimasi berbasis model machine learning dan bukan pengganti pengamatan lapangan.',
+                gaugeSafe: 'Sehat',
+                gaugeDanger: 'Memutih',
+                idleTitle: 'Menunggu Input',
+                idleNote: 'Jalankan analisis untuk melihat posisi klasifikasi pada skala di atas.',
+                resultTitleSafe: 'Aman: Kondisi Karang Sehat',
+                resultTitleDanger: 'Bahaya: Potensi Pemutihan Karang Tinggi',
+                resultTitleError: 'Terjadi kesalahan. Silakan coba lagi.',
+                pillSafe: 'Risiko Rendah',
+                pillDanger: 'Risiko Tinggi',
+                pillError: 'Gagal',
+                noteSafe: 'Pertahankan kondisi dan lanjutkan pemantauan rutin.',
+                noteDanger: 'Tingkatkan pemantauan dan siapkan langkah mitigasi.',
+                noteError: 'Periksa kembali nilai input dan koneksi ke server.',
+                valuesCaption: 'Parameter yang dianalisis',
+                radarYou: 'Input Anda',
+                radarMedian: 'Median dataset',
+                radarAria: 'Profil parameter dibandingkan dengan median dataset'
+            },
+            en: {
+                pageTitle: 'Coral Bleaching Predictor | Coral Reef Bleaching Prediction',
+                langAria: 'Choose language',
+                badge: 'XGBoost Model \u00B7 Machine Learning',
+                heroTitle: 'Coral Reef Bleaching Prediction',
+                heroSubtitle: 'Coral bleaching risk analysis based on six marine environmental parameters',
+                formTitle: 'Environmental Parameters',
+                formDescHtml: 'Hover over the <em>i</em> icon to see an explanation of each parameter.',
+                legendTemp: 'Temperature & Anomaly',
+                legendDhw: 'Thermal Stress Accumulation',
+                legendLoc: 'Site Conditions',
+                ariaTemp: 'Explanation of Temperature Mean',
+                ariaSsta: 'Explanation of SSTA',
+                ariaSstaDhw: 'Explanation of SSTA DHW',
+                ariaTsaDhw: 'Explanation of TSA DHW',
+                ariaWind: 'Explanation of Windspeed',
+                ariaDepth: 'Explanation of Depth',
+                tipTemp: 'Mean sea surface temperature (Kelvin) over the observation period.',
+                tipSsta: 'Sea Surface Temperature Anomaly: deviation of sea surface temperature from its long-term average.',
+                tipSstaDhw: 'SSTA-based Degree Heating Weeks: accumulated excess heat above the bleaching threshold during the observation period.',
+                tipTsaDhw: 'Thermal Stress Anomaly-based Degree Heating Weeks: an alternative heat-stress accumulation from the observation dataset.',
+                tipWind: 'Mean surface wind speed; it affects water mixing and heat release.',
+                tipDepth: 'Reef site depth in metres; it affects heat and light exposure.',
+                hintTemp: 'Data range 291 \u2013 304 K',
+                hintSsta: 'Temperature anomaly \u22124.6 \u2013 5.9',
+                hintSstaDhw: 'Data range 0 \u2013 53.6',
+                hintTsaDhw: 'Data range 0 \u2013 52.5',
+                hintWind: 'Data range 0 \u2013 15 m/s',
+                hintDepth: 'Data range 0 \u2013 90 m',
+                progressLabel: 'Parameter completeness',
+                presetsLabel: 'Quick fill',
+                presetSehat: 'Healthy Coral',
+                presetPanas: 'Heat Stress',
+                presetDalam: 'Deep Water',
+                btnSubmit: 'Analyze Now',
+                btnLoading: 'Analyzing...',
+                statusTitle: 'Analysis Status',
+                statusDesc: 'Model classification result',
+                metaFeatLabel: 'Features',
+                metaFeatValue: '6 environmental parameters',
+                metaOutValue: '0 = Healthy Coral \u00B7 1 = Potential Bleaching',
+                insightTitle: 'Model Insight & Parameter Profile',
+                insightDesc: 'Your input compared with the training dataset, plus each feature weight in the model.',
+                impTitle: 'Feature Importance',
+                radarNote: 'Normalized 0\u20131 scale based on the training data range. Out-of-range values are clipped to the edge.',
+                impNoteHtml: 'Taken from <code>model.feature_importances_</code> (XGBoost gain, normalized).',
+                docTitle: 'Model & Data Source Information',
+                docDesc: 'Details of the prediction model and the origin of the dataset used.',
+                modelH: 'Model Specification',
+                datasetH: 'Dataset Source',
+                rAlgo: 'Algorithm',
+                rConfig: 'Configuration',
+                vLr: '0.05 \u00B7 logloss metric',
+                rBalance: 'Class balancing',
+                vBalance: 'scale_pos_weight (class ratio)',
+                rSplit: 'Data split',
+                vSplit: 'Train &lt; 2015 \u00B7 Test \u2265 2015',
+                rSize: 'Data size',
+                vSize: '25,355 train \u00B7 7,361 test',
+                rAcc: 'Test accuracy',
+                rF1: 'Bleaching-class F1',
+                rFile: 'File',
+                rSource: 'Source',
+                rMerge: 'Data merge',
+                vMerge: 'NOAA sea-temperature satellite',
+                rPeriod: 'Period',
+                rTotal: 'Total records',
+                vTotal: '41,361 rows',
+                rUsed: 'Records used',
+                vUsed: '32,716 rows (after cleaning)',
+                rCover: 'Coverage',
+                vCover: '91 countries \u00B7 5 oceans',
+                rContrib: 'Field contributors',
+                vContrib: 'Reef Check, Donner, AGRRA, FRRP, Kumagai, etc.',
+                rTarget: 'Target definition',
+                vTarget: 'Percent_Bleaching &gt; 0 \u2192 bleaching',
+                docNoteHtml: 'The dataset comes from <strong>BCO-DMO</strong> (Biological and Chemical Oceanography Data Management Office), a version merged with <strong>NOAA</strong> sea surface temperature satellite data. The <code>Data_Source</code> column records the field monitoring programmes that contributed data (Reef Check, Donner, AGRRA, FRRP, etc.). Model accuracy is limited &mdash; results are decision-support estimates only.',
+                footerText: 'Predictions are estimates from a machine learning model and are not a substitute for field observation.',
+                gaugeSafe: 'Healthy',
+                gaugeDanger: 'Bleaching',
+                idleTitle: 'Awaiting Input',
+                idleNote: 'Run the analysis to see the classification position on the scale above.',
+                resultTitleSafe: 'Safe: Coral in Healthy Condition',
+                resultTitleDanger: 'Danger: High Risk of Coral Bleaching',
+                resultTitleError: 'Something went wrong. Please try again.',
+                pillSafe: 'Low Risk',
+                pillDanger: 'High Risk',
+                pillError: 'Failed',
+                noteSafe: 'Maintain current conditions and continue routine monitoring.',
+                noteDanger: 'Increase monitoring and prepare mitigation measures.',
+                noteError: 'Please check your input values and the server connection.',
+                valuesCaption: 'Analyzed parameters',
+                radarYou: 'Your input',
+                radarMedian: 'Dataset median',
+                radarAria: 'Parameter profile compared with the dataset median'
+            }
+        };
+
+        const LANG_KEY = 'coral-bleaching-lang';
+        const savedLang = localStorage.getItem(LANG_KEY);
+        let LANG = savedLang === 'en' || savedLang === 'id' ? savedLang : 'id';
+
+        function t(key) {
+            return (I18N[LANG] && I18N[LANG][key]) || I18N.id[key] || key;
+        }
+
+        function applyStaticText() {
+            document.documentElement.lang = LANG;
+
+            document.querySelectorAll('[data-i18n]').forEach((el) => {
+                el.textContent = t(el.dataset.i18n);
+            });
+
+            document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+                el.innerHTML = t(el.dataset.i18nHtml);
+            });
+
+            document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+                el.setAttribute('aria-label', t(el.dataset.i18nAria));
+            });
+
+            if (submitBtn.disabled) btnLabel.textContent = t('btnLoading');
+        }
+
+        /* Gauge klasifikasi: jarum hanya menunjuk dua zona (0 = sehat, 1 = memutih). */
+        function gaugeMarkup() {
+            return `
+                <div class="gauge-wrap">
+                    <svg viewBox="0 0 200 116" aria-hidden="true">
+                        <path class="gauge-track" d="M18 100 A 82 82 0 0 1 182 100"/>
+                        <path class="gauge-zone gauge-zone-safe" d="M18 100 A 82 82 0 0 1 100 18"/>
+                        <path class="gauge-zone gauge-zone-danger" d="M100 18 A 82 82 0 0 1 182 100"/>
+                        <g class="gauge-needle">
+                            <line x1="100" y1="100" x2="100" y2="36"/>
+                        </g>
+                        <circle class="gauge-hub" cx="100" cy="100" r="9"/>
+                    </svg>
+                    <div class="gauge-scale">
+                        <span>${t('gaugeSafe')}</span>
+                        <span>${t('gaugeDanger')}</span>
+                    </div>
+                </div>`;
+        }
+
+        function idleMarkup() {
+            return `
+                ${gaugeMarkup()}
+                <strong class="idle-title">${t('idleTitle')}</strong>
+                <span class="idle-note">${t('idleNote')}</span>
+            `;
+        }
+
+        const LOADING_MARKUP = `
+            <div class="sk sk-gauge"></div>
+            <div class="sk sk-line"></div>
+            <div class="sk sk-line short"></div>
+        `;
+
+        function unitFor(key) {
+            const unit = UNITS[key];
+            return LANG === 'en' ? unit.replace('minggu', 'week') : unit;
+        }
+
+        /* ---------- Kelengkapan input ---------- */
+
+        function updateProgress() {
+            const filled = fields.filter((key) => document.getElementById(key).value.trim() !== '').length;
+            filledCount.textContent = filled;
+            progressFill.style.width = (filled / fields.length) * 100 + '%';
+        }
+
+        form.addEventListener('input', updateProgress);
+
+        /* ---------- Preset & reset ---------- */
+
+        document.querySelectorAll('.chip').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                const preset = PRESETS[chip.dataset.preset];
+                if (!preset) return;
+
+                fields.forEach((key) => {
+                    document.getElementById(key).value = preset[key];
+                });
+
+                document.querySelectorAll('.chip').forEach((c) => c.classList.remove('is-active'));
+                chip.classList.add('is-active');
+                updateProgress();
+            });
+        });
+
+        resetBtn.addEventListener('click', () => {
+            fields.forEach((key) => {
+                document.getElementById(key).value = '';
+            });
+            document.querySelectorAll('.chip').forEach((c) => c.classList.remove('is-active'));
+            updateProgress();
+            view = { mode: 'idle' };
+            renderRadar(null, null);
+            renderView();
+        });
+
+        /* ---------- Kirim ke backend ---------- */
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const payload = {};
+            fields.forEach((key) => {
+                payload[key] = document.getElementById(key).value;
+            });
+
+            view = { mode: 'loading' };
+            renderView();
+            setLoading(true);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showResult('error', null);
+                    return;
+                }
+
+                showResult(data.status, payload);
+            } catch (error) {
+                showResult('error', null);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        /* ---------- Render ---------- */
+
+        let view = { mode: 'idle' };
+
+        function renderView() {
+            if (view.mode === 'loading') {
+                resultBox.className = 'result loading';
+                resultBox.innerHTML = LOADING_MARKUP;
+                return;
+            }
+            if (view.mode === 'result') {
+                paintResult(view.status, view.payload);
+                return;
+            }
+            resultBox.className = 'result idle';
+            resultBox.innerHTML = idleMarkup();
+        }
+
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            resetBtn.disabled = isLoading;
+            submitBtn.classList.toggle('is-loading', isLoading);
+            btnLabel.textContent = isLoading ? t('btnLoading') : t('btnSubmit');
+        }
+
+        function showResult(status, payload) {
+            view = { mode: 'result', status, payload };
+            renderView();
+        }
+
+        function paintResult(status, payload) {
+            const pill = status === 'safe' ? t('pillSafe') : status === 'danger' ? t('pillDanger') : t('pillError');
+            const note = status === 'safe' ? t('noteSafe') : status === 'danger' ? t('noteDanger') : t('noteError');
+            const title = status === 'safe' ? t('resultTitleSafe')
+                : status === 'danger' ? t('resultTitleDanger') : t('resultTitleError');
+
+            resultBox.className = 'result';
+            resultBox.innerHTML = '';
+
+            const top = document.createElement('div');
+            top.className = 'result-top';
+
+            const icon = document.createElement('span');
+            icon.className = 'result-icon';
+            icon.innerHTML = ICONS[status] || ICONS.error;
+
+            const pillEl = document.createElement('span');
+            pillEl.className = 'result-pill';
+            pillEl.textContent = pill;
+
+            top.append(icon, pillEl);
+
+            const gauge = document.createElement('div');
+            gauge.innerHTML = gaugeMarkup();
+
+            const titleEl = document.createElement('strong');
+            titleEl.className = 'result-title';
+            titleEl.textContent = title;
+
+            const noteEl = document.createElement('span');
+            noteEl.className = 'result-note';
+            noteEl.textContent = note;
+
+            resultBox.append(top, gauge.firstElementChild, titleEl, noteEl);
+
+            /* Ringkasan nilai yang dianalisis (tidak ditampilkan saat error) */
+            if (payload && status !== 'error') {
+                const caption = document.createElement('span');
+                caption.className = 'values-caption';
+                caption.textContent = t('valuesCaption');
+
+                const list = document.createElement('dl');
+                list.className = 'result-values';
+
+                fields.forEach((key) => {
+                    const row = document.createElement('div');
+
+                    const dt = document.createElement('dt');
+                    dt.textContent = LABELS[key];
+
+                    const dd = document.createElement('dd');
+                    dd.textContent = `${payload[key]} ${unitFor(key)}`;
+
+                    row.append(dt, dd);
+                    list.append(row);
+                });
+
+                resultBox.append(caption, list);
+            }
+
+            /* Paksa reflow agar jarum gauge beranimasi dari posisi netral */
+            void resultBox.offsetWidth;
+            resultBox.classList.add(status);
+
+            /* Sinkronkan radar dengan input yang baru dianalisis */
+            renderRadar(payload && status !== 'error' ? payload : null, status);
+        }
+
+        /* ---------- Radar profil parameter ---------- */
+
+        const RADAR = { size: 260, center: 130, radius: 86, labelRadius: 108 };
+        let lastRadar = { payload: null, status: null };
+
+        function normalize(key, rawValue) {
+            const [min, max] = RANGE[key];
+            const value = parseFloat(rawValue);
+            if (!isFinite(value)) return 0;
+            return Math.min(1, Math.max(0, (value - min) / (max - min)));
+        }
+
+        function radarPoint(index, ratio) {
+            const angle = ((-90 + index * 60) * Math.PI) / 180;
+            const r = RADAR.radius * ratio;
+            return [
+                RADAR.center + r * Math.cos(angle),
+                RADAR.center + r * Math.sin(angle)
+            ];
+        }
+
+        function radarPolygon(ratios, className) {
+            const points = ratios
+                .map((ratio, index) => radarPoint(index, ratio).map((n) => n.toFixed(1)).join(','))
+                .join(' ');
+            return `<polygon class="${className}" points="${points}"/>`;
+        }
+
+        function renderRadar(payload, status) {
+            lastRadar = { payload: payload || null, status: status || null };
+
+            const rings = [0.25, 0.5, 0.75, 1]
+                .map((level) => radarPolygon(fields.map(() => level), 'radar-ring'))
+                .join('');
+
+            const spokes = fields
+                .map((_, index) => {
+                    const [x, y] = radarPoint(index, 1);
+                    return `<line class="radar-spoke" x1="${RADAR.center}" y1="${RADAR.center}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+                })
+                .join('');
+
+            const labels = fields
+                .map((key, index) => {
+                    const [x, y] = radarPoint(index, RADAR.labelRadius / RADAR.radius);
+                    const dx = Math.cos(((-90 + index * 60) * Math.PI) / 180);
+                    const anchor = Math.abs(dx) < 0.15 ? 'middle' : dx > 0 ? 'start' : 'end';
+                    return `<text class="radar-label" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle">${SHORT[key]}</text>`;
+                })
+                .join('');
+
+            const medianRatios = fields.map((key) => normalize(key, MEDIAN_ALL[key]));
+            const reference = radarPolygon(medianRatios, 'radar-median');
+
+            let dataLayer = '';
+            if (payload) {
+                const dataRatios = fields.map((key) => normalize(key, payload[key]));
+                dataLayer = radarPolygon(dataRatios, `radar-data ${status || ''}`);
+            }
+
+            radarBox.className = 'radar-wrap' + (payload ? ' has-data ' + status : '');
+            radarBox.innerHTML = `
+                <svg viewBox="0 0 ${RADAR.size} ${RADAR.size}" role="img"
+                     aria-label="${t('radarAria')}">
+                    ${rings}
+                    ${spokes}
+                    ${reference}
+                    ${dataLayer}
+                    ${labels}
+                </svg>`;
+
+            radarLegend.innerHTML = `
+                ${payload ? `<span class="legend-item"><i class="legend-dot ${status}"></i>${t('radarYou')}</span>` : ''}
+                <span class="legend-item"><i class="legend-dot ref"></i>${t('radarMedian')}</span>`;
+        }
+
+        /* ---------- Tingkat kepentingan fitur ---------- */
+
+        function renderImportance() {
+            const max = Math.max(...IMPORTANCE.map(([, value]) => value));
+
+            importanceList.innerHTML = '';
+
+            IMPORTANCE.forEach(([label, value]) => {
+                const item = document.createElement('li');
+
+                const name = document.createElement('span');
+                name.className = 'bar-label';
+                name.textContent = label;
+
+                const track = document.createElement('span');
+                track.className = 'bar-track';
+
+                const fill = document.createElement('span');
+                fill.className = 'bar-fill';
+                fill.dataset.width = ((value / max) * 100).toFixed(1) + '%';
+                track.append(fill);
+
+                const amount = document.createElement('span');
+                amount.className = 'bar-value';
+                amount.textContent = (value * 100).toFixed(1) + '%';
+
+                item.append(name, track, amount);
+                importanceList.append(item);
+            });
+
+            requestAnimationFrame(() => {
+                importanceList.querySelectorAll('.bar-fill').forEach((bar) => {
+                    bar.style.width = bar.dataset.width;
+                });
+            });
+        }
+
+        /* ---------- Ganti bahasa ---------- */
+
+        function setLanguage(lang) {
+            LANG = lang;
+            localStorage.setItem(LANG_KEY, lang);
+
+            document.querySelectorAll('.lang-btn').forEach((btn) => {
+                const active = btn.dataset.lang === lang;
+                btn.classList.toggle('is-active', active);
+                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+
+            applyStaticText();
+            renderView();
+            renderRadar(lastRadar.payload, lastRadar.status);
+        }
+
+        document.querySelectorAll('.lang-btn').forEach((btn) => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+
+        updateProgress();
+        setLanguage(LANG);
+        renderImportance();
+    </script>
+</body>
+</html>

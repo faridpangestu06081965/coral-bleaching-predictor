@@ -1,0 +1,25 @@
+# Dataset (16 MB, sumber aslinya di BCO-DMO — lihat README)
+global_bleaching_environmental.csv
+
+# Berkas nyasar: sumber internal pandas, bukan bagian proyek ini
+series.py
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Environment & kredensial
+.env
+.env.*
+*.key
+*.pem
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
