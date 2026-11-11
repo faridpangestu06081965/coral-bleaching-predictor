@@ -1,39 +1,75 @@
-# Coral Bleaching Predictor
+# Coral Bleaching Predictor: Flask + XGBoost Web App
 
-Aplikasi web lokal berbasis **Flask** untuk memprediksi risiko **pemutihan terumbu karang (coral bleaching)** menggunakan model **XGBoost** yang dilatih dari data pemantauan karang global.
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-3.1-black.svg)
+![XGBoost](https://img.shields.io/badge/XGBoost-Classifier-orange.svg)
+![Machine_Learning](https://img.shields.io/badge/Machine-Learning-brightgreen.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-Antarmuka menyediakan formulir enam parameter lingkungan, lalu menampilkan hasil klasifikasi (`0` = karang sehat, `1` = potensi memutih) beserta profil parameter, tingkat kepentingan fitur, dan keterangan sumber data.
+A locally hosted **Flask** web application that predicts the risk of **coral bleaching** using an **XGBoost** classifier trained on a global coral-monitoring dataset. The app serves a six-parameter environmental form and returns a classification (`0` = healthy reef, `1` = bleaching risk) alongside the input profile, feature importances, and dataset/model provenance.
 
-## Fitur
+## 📌 Project Overview & Engineering Highlights
 
-- **Prediksi real-time** lewat `fetch` API tanpa reload halaman
-- **Gauge klasifikasi** dua zona (Sehat / Memutih)
-- **Radar profil parameter** — membandingkan input pengguna dengan median dataset latih
-- **Tingkat kepentingan fitur** dari `model.feature_importances_`
-- **Preset input** (Karang Sehat, Stres Panas, Perairan Dalam) yang diambil dari nilai nyata dataset
-- **Dua bahasa** (Indonesia / Inggris) dengan pilihan tersimpan di `localStorage`
-- **Desain responsif** — glassmorphism di atas latar foto terumbu karang
-- Menghormati `prefers-reduced-motion` dan mendukung navigasi keyboard
+This project simulates a reef survey: the user enters six ocean-environmental measurements, and the model estimates whether the reef is under bleaching stress.
 
-## Teknologi
+- 🌊 **Environmental Input Model**: Six numeric features — `Temperature_Mean` (Kelvin), `SSTA`, `SSTA_DHW`, `TSA_DHW`, `Windspeed`, `Depth_m` — captured in the exact order expected by the trained model.
+- 🌡️ **Heat-Stress Features**: Sea Surface Temperature Anomaly and Degree Heating Weeks (`SSTA`, `SSTA_DHW`, `TSA_DHW`) encode the thermal stress that drives bleaching events.
+- 🧠 **Gradient-Boosted Classifier**: XGBoost (`n_estimators=200`, `max_depth=6`, `learning_rate=0.05`) with `scale_pos_weight` to counter class imbalance, evaluated on a temporal hold-out split.
+- 📊 **Real-Time Glassmorphism Dashboard**: A vanilla HTML/CSS/JS interface with a classification gauge, a six-axis radar chart (input vs. dataset median), and feature-importance bars — all updated via `fetch` with no page reload.
+- 🌐 **Bilingual UI (ID / EN)**: Full internationalization through a `data-i18n` attribute system and a JavaScript dictionary, with the choice persisted in `localStorage`.
 
-| Lapisan | Teknologi |
+## 📈 Prediction Output & Model Behavior
+
+Based on the trained model and the temporal hold-out evaluation:
+
+1. **Healthy vs. Bleaching**: The model returns `status: "safe"` (`prediction = 0`) or `status: "danger"` (`prediction = 1`). The UI renders this on a two-zone gauge.
+2. **Balanced but Limited**: Test accuracy is **64.2%** with an F1 of **52.3%** on the bleaching (minority) class — the model recognizes non-bleaching conditions more reliably than bleaching events.
+3. **Feature Influence**: Depth (25.8%) and mean temperature (24.0%) are the strongest drivers, followed by thermal-stress weeks and wind speed.
+
+## 🛠️ Tech Stack & Requirements
+
+| Layer | Technology |
 | --- | --- |
 | Backend | Flask, joblib, NumPy |
 | Model | XGBoost (scikit-learn API) |
-| Pelatihan | pandas, scikit-learn |
-| Frontend | HTML, CSS, JavaScript (vanilla, tanpa framework) |
+| Training | pandas, scikit-learn |
+| Frontend | HTML, CSS, JavaScript (vanilla, no framework) |
 
-## Struktur Proyek
+- **Environment**: Python 3.10+, Flask 3.1
+- **Dependencies**: see [`requirements.txt`](requirements.txt)
+
+## 🚀 Quick Start
+
+To run the prediction server locally:
+
+1. (Optional) create a virtual environment:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate        # Windows
+   # source .venv/bin/activate   # macOS / Linux
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Start the server:
+   ```bash
+   python app.py
+   ```
+4. Open <http://127.0.0.1:5000>.
+
+The model `xgboost_coral_model.pkl` is included, so the app runs out of the box. To retrain, place the dataset (see [Dataset](#-dataset)) in the project root and run `python train.py`.
+
+## 🧱 Project Structure
 
 ```
 .
-├── app.py                        # Server Flask (rute / dan /predict)
-├── train.py                      # Skrip pelatihan model XGBoost
-├── xgboost_coral_model.pkl       # Model terlatih (dimuat oleh app.py)
+├── app.py                        # Flask server (/ and /predict routes)
+├── train.py                      # XGBoost training script
+├── xgboost_coral_model.pkl       # Trained model (loaded by app.py)
 ├── requirements.txt
 ├── templates/
-│   └── index.html                # UI + logika frontend & i18n
+│   └── index.html                # UI + frontend logic & i18n
 └── static/
     ├── style.css
     └── img/
@@ -41,30 +77,11 @@ Antarmuka menyediakan formulir enam parameter lingkungan, lalu menampilkan hasil
         └── reef-tall.jpg
 ```
 
-## Menjalankan
-
-```bash
-# 1. (Opsional) buat virtual environment
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS / Linux
-
-# 2. Pasang dependensi
-pip install -r requirements.txt
-
-# 3. Jalankan server
-python app.py
-```
-
-Buka <http://127.0.0.1:5000>.
-
-Model `xgboost_coral_model.pkl` sudah disertakan, jadi aplikasi bisa langsung dijalankan. Untuk melatih ulang, ikuti bagian [Dataset](#dataset) di bawah lalu jalankan `python train.py`.
-
-## API
+## 🔌 API
 
 ### `POST /predict`
 
-Body JSON dengan enam parameter:
+JSON body with six parameters:
 
 ```json
 {
@@ -77,7 +94,7 @@ Body JSON dengan enam parameter:
 }
 ```
 
-Respons:
+Response:
 
 ```json
 {
@@ -87,28 +104,28 @@ Respons:
 }
 ```
 
-`status` bernilai `safe` (prediksi `0`) atau `danger` (prediksi `1`). Jika input tidak lengkap atau tidak valid, server mengembalikan `400` dengan `{"error": "..."}`.
+`status` is `safe` (prediction `0`) or `danger` (prediction `1`). If the input is missing or invalid, the server returns `400` with `{"error": "..."}`.
 
-> Urutan fitur harus persis seperti di `app.py` (`FEATURES`) dan `train.py` — XGBoost tidak menyimpan nama kolom.
+> The feature order must match `FEATURES` in `app.py` and `train.py` exactly — XGBoost does not store column names.
 
-## Model
+## 🧪 Model
 
-| Item | Nilai |
+| Item | Value |
 | --- | --- |
-| Algoritma | XGBoost Classifier |
-| Konfigurasi | `n_estimators=200`, `max_depth=6` |
+| Algorithm | XGBoost Classifier |
+| Configuration | `n_estimators=200`, `max_depth=6` |
 | Learning rate | `0.05`, `eval_metric='logloss'` |
-| Penyeimbangan kelas | `scale_pos_weight` (rasio kelas) |
-| Pembagian data | Latih: tahun `< 2015` · Uji: tahun `>= 2015` |
-| Jumlah data | 25.355 latih · 7.361 uji |
-| Akurasi uji | 64.2% |
-| F1 kelas pemutihan | 52.3% |
+| Class balancing | `scale_pos_weight` (class ratio) |
+| Data split | Train: year `< 2015` · Test: year `>= 2015` |
+| Sample count | 25,355 train · 7,361 test |
+| Test accuracy | 64.2% |
+| Bleaching-class F1 | 52.3% |
 
-Target: `Bleaching_Occurred = 1` bila `Percent_Bleaching > 0`.
+Target: `Bleaching_Occurred = 1` when `Percent_Bleaching > 0`.
 
-Tingkat kepentingan fitur (`model.feature_importances_`, ternormalisasi):
+Feature importance (`model.feature_importances_`, normalized):
 
-| Fitur | Bobot |
+| Feature | Weight |
 | --- | --- |
 | Depth | 25.8% |
 | Temperature Mean | 24.0% |
@@ -117,33 +134,33 @@ Tingkat kepentingan fitur (`model.feature_importances_`, ternormalisasi):
 | SSTA DHW | 10.1% |
 | SSTA | 8.2% |
 
-## Dataset
+## 📂 Dataset
 
-Dataset **tidak disertakan** di repo ini karena berukuran besar. Untuk melatih ulang model, letakkan berkas `global_bleaching_environmental.csv` di direktori akar proyek.
+The dataset is **not included** in this repository due to its size. To retrain the model, place `global_bleaching_environmental.csv` in the project root.
 
-| Item | Keterangan |
+| Item | Detail |
 | --- | --- |
-| Berkas | `global_bleaching_environmental.csv` |
-| Sumber | BCO-DMO (Biological and Chemical Oceanography Data Management Office) |
-| Penggabungan data | Data satelit suhu permukaan laut NOAA |
-| Periode | 1980 – 2020 |
-| Total rekaman | 41.361 baris |
-| Rekaman terpakai | 32.716 baris (setelah pembersihan) |
-| Cakupan | 91 negara · 5 samudra |
-| Kontributor lapangan | Reef Check, Donner, AGRRA, FRRP, Kumagai, dll. |
-| Definisi target | `Percent_Bleaching > 0` → pemutihan |
+| File | `global_bleaching_environmental.csv` |
+| Source | BCO-DMO (Biological and Chemical Oceanography Data Management Office) |
+| Data merge | NOAA sea surface temperature satellite data |
+| Period | 1980 – 2020 |
+| Total records | 41,361 rows |
+| Records used | 32,716 rows (after cleaning) |
+| Coverage | 91 countries · 5 oceans |
+| Field contributors | Reef Check, Donner, AGRRA, FRRP, Kumagai, etc. |
+| Target definition | `Percent_Bleaching > 0` → bleaching |
 
-Kolom lingkungan yang dipakai: `Temperature_Mean` (Kelvin), `SSTA`, `SSTA_DHW`, `TSA_DHW`, `Windspeed`, `Depth_m`.
+Environmental columns used: `Temperature_Mean` (Kelvin), `SSTA`, `SSTA_DHW`, `TSA_DHW`, `Windspeed`, `Depth_m`.
 
-> **Catatan satuan:** `Temperature_Mean` berada dalam **Kelvin** (rentang data 290.9 – 303.5 K), bukan Celsius.
+> **Unit note:** `Temperature_Mean` is in **Kelvin** (data range 290.9 – 303.5 K), not Celsius.
 
-## Catatan & Keterbatasan
+## ⚠️ Notes & Limitations
 
-- Hasil prediksi bersifat **estimasi** dari model machine learning dan **bukan pengganti pengamatan lapangan**.
-- Akurasi model terbatas (64.2%), dengan F1 kelas minoritas 52.3% — model cenderung lebih baik mengenali kondisi tanpa pemutihan.
-- Nilai validasi UI (rentang, median, preset) diambil dari statistik nyata dataset, bukan angka yang dikarang.
-- Statistik pada kartu "Keterangan Model & Sumber Data" dihitung dari dataset dan model yang sama.
+- Predictions are **estimates** from a machine-learning model and are **not a replacement for field observation**.
+- Model accuracy is limited (64.2%), with a minority-class F1 of 52.3% — the model detects non-bleaching conditions better than bleaching events.
+- All UI values (ranges, medians, presets) are derived from real dataset statistics, not hard-coded guesses.
+- Statistics on the "Model & Data Source" card are computed from the same dataset and model.
 
-## Lisensi
+## 📄 License
 
-Belum ditentukan. Tambahkan berkas `LICENSE` jika proyek ini akan dipublikasikan lebih lanjut.
+MIT. Add a `LICENSE` file at the project root if the repository is published further.
